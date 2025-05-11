@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
-import { Contract, BrowserProvider, parseEther, parseUnits, formatUnits } from 'ethers';
+import { Contract, providers, utils } from 'ethers';
 import HomePage from './components/HomePage';
 import TokenInfoPage from './components/TokenInfoPage';
 import RoadmapPage from './components/RoadmapPage';
@@ -58,13 +58,13 @@ const App = () => {
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
-        const provider = new BrowserProvider(window.ethereum);
-        const accounts = await provider.send('eth_requestAccounts', []);
-        if (accounts.length > 0) {
-          setWalletAddress(accounts[0]);
-          setIsConnected(true);
-          alert('✅ MetaMask Connected!');
-        }
+        const provider = new providers.Web3Provider(window.ethereum);
+        await provider.send('eth_requestAccounts', []);
+        const signer = provider.getSigner();
+        const address = await signer.getAddress();
+        setWalletAddress(address);
+        setIsConnected(true);
+        alert('✅ MetaMask Connected!');
       } catch (error) {
         console.error('Connection error:', error);
         alert('Error connecting to MetaMask.');
@@ -77,8 +77,8 @@ const App = () => {
   const buyTokens = async () => {
     if (!isConnected) return alert('Connect wallet first');
 
-    const provider = new BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
+    const provider = new providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
     const presale = new Contract(PRESALE_ADDRESS, PRESALE_ABI, signer);
 
     try {
@@ -88,12 +88,12 @@ const App = () => {
       }
 
       if (paymentMethod === 'BNB') {
-        const tx = await presale.buyWithBNB({ value: parseEther(numericAmount.toString()) });
+        const tx = await presale.buyWithBNB({ value: utils.parseEther(numericAmount.toString()) });
         await tx.wait();
         alert(`✅ BNB Payment Success! You bought ${Math.floor(totalTokens).toLocaleString()} VTX`);
       } else if (paymentMethod === 'USDT') {
         const usdt = new Contract(USDT_ADDRESS, USDT_ABI, signer);
-        const usdtAmount = parseUnits(numericAmount.toString(), 18);
+        const usdtAmount = utils.parseUnits(numericAmount.toString(), 18);
         const approveTx = await usdt.approve(PRESALE_ADDRESS, usdtAmount);
         await approveTx.wait();
         const buyTx = await presale.buyWithUSDT(usdtAmount);
@@ -109,7 +109,7 @@ const App = () => {
 
   const fetchPresaleStatus = async () => {
     try {
-      const provider = new BrowserProvider(window.ethereum || window);
+      const provider = new providers.Web3Provider(window.ethereum || window);
       const presale = new Contract(PRESALE_ADDRESS, PRESALE_ABI, provider);
 
       const ended = await presale.isPresaleEnded();
@@ -117,8 +117,8 @@ const App = () => {
       const total = await presale.tokensForSale();
 
       setPresaleEnded(ended);
-      setTokensSold(Number(formatUnits(sold, 18)));
-      setTokensForSale(Number(formatUnits(total, 18)));
+      setTokensSold(Number(utils.formatUnits(sold, 18)));
+      setTokensForSale(Number(utils.formatUnits(total, 18)));
     } catch (err) {
       console.error('Error fetching presale status', err);
     }
@@ -137,7 +137,6 @@ const App = () => {
       <section className="bg-gray-900 py-12 px-4 md:px-6">
         <div className="max-w-4xl mx-auto bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 p-1 rounded-3xl shadow-lg">
           <div className="bg-gray-900 rounded-3xl p-6 md:p-8">
-
             <div className="flex items-center gap-4 mb-6">
               <img src="/images/coin-icon.png" alt="FDR Coin" className="w-16 h-16" />
               <div>
