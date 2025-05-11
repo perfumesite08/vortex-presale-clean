@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  FaShieldAlt,
-  FaRocket,
-  FaCogs,
-  FaBars,
-  FaTimes,
-  FaGithub,
-  FaLinkedin,
-} from 'react-icons/fa';
+import { FaBars, FaTimes } from 'react-icons/fa';
 
 const HomePage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -19,7 +11,7 @@ const HomePage = () => {
   });
 
   useEffect(() => {
-    const CYCLE_DURATION = 48 * 60 * 60 * 1000; // 48 hours in milliseconds
+    const CYCLE_DURATION = 48 * 60 * 60 * 1000;
 
     const getNextCycleEnd = () => {
       const now = new Date().getTime();
@@ -51,7 +43,6 @@ const HomePage = () => {
 
   return (
     <div className="font-sans text-white bg-gradient-to-b from-orange-900 via-rose-800 to-black scroll-smooth">
-      {/* Header */}
       <header className="fixed top-0 left-0 w-full z-50 bg-black bg-opacity-70 backdrop-blur-md shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 flex justify-between items-center h-16">
           <div className="text-2xl font-bold text-yellow-400 tracking-wide">Vortrex</div>
@@ -92,7 +83,6 @@ const HomePage = () => {
 
       <div className="h-16"></div>
 
-      {/* Hero Section */}
       <section
         className="text-center py-24 px-4 bg-cover bg-center relative"
         style={{
@@ -121,7 +111,6 @@ const HomePage = () => {
 
           <p className="text-sm mb-2 text-orange-400">Presale ends in:</p>
 
-          {/* Countdown */}
           <div className="flex justify-center gap-8 text-3xl font-semibold text-white mt-6">
             {[
               { label: 'Days', value: timeLeft.days },
