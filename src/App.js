@@ -55,9 +55,47 @@ const App = () => {
     }
   };
 
+  const BSC_CHAIN_ID = '0x38';
+
+  const switchToBSC = async () => {
+    try {
+      const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+      if (currentChainId !== BSC_CHAIN_ID) {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: BSC_CHAIN_ID }]
+        });
+      }
+    } catch (switchError) {
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: BSC_CHAIN_ID,
+              chainName: 'Binance Smart Chain',
+              rpcUrls: ['https://bsc-dataseed.binance.org/'],
+              nativeCurrency: {
+                name: 'BNB',
+                symbol: 'BNB',
+                decimals: 18
+              },
+              blockExplorerUrls: ['https://bscscan.com']
+            }]
+          });
+        } catch (addError) {
+          console.error('Error adding BSC network:', addError);
+        }
+      } else {
+        console.error('Error switching to BSC:', switchError);
+      }
+    }
+  };
+
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
+        await switchToBSC();
         const provider = new providers.Web3Provider(window.ethereum);
         await provider.send('eth_requestAccounts', []);
         const signer = provider.getSigner();
